@@ -77,11 +77,6 @@ function git_prompt_config()
     GIT_PROMPT_UNTRACKED="${Cyan}…"
     GIT_PROMPT_STASHED="${BoldBlue}⚑"
     GIT_PROMPT_CLEAN="${BoldGreen}✔"
-    
-    # Please do not add colors to these symbols
-    GIT_PROMPT_SYMBOLS_AHEAD="↑·"
-    GIT_PROMPT_SYMBOLS_BEHIND="↓·"
-    GIT_PROMPT_SYMBOLS_PREHASH=":"
   fi
 
   # Various variables you might want for your PS1 prompt instead
@@ -91,7 +86,7 @@ function git_prompt_config()
   local PathShort="\w"
 
   if [ "x${GIT_PROMPT_START}" == "x" ]; then
-    PROMPT_START="${Yellow}${PathShort}${ResetColor}"
+    PROMPT_START="${IntenseBlack}${PathShort}${ResetColor}"
   else
     PROMPT_START="${GIT_PROMPT_START}"
   fi
@@ -109,14 +104,10 @@ function git_prompt_config()
     PROMPT_LEADING_SPACE=" "
   fi
 
-  if [ "x${GIT_PROMPT_ONLY_IN_REPO}" == "x1" ]; then
-    EMPTY_PROMPT=$OLD_GITPROMPT
+  if [[ -n "${VIRTUAL_ENV}" ]]; then
+    EMPTY_PROMPT="${Blue}($(basename "${VIRTUAL_ENV}"))${ResetColor} ${PROMPT_START}$($prompt_callback)${PROMPT_END}"
   else
-    if [[ -n "${VIRTUAL_ENV}" ]]; then
-      EMPTY_PROMPT="(${Blue}$(basename "${VIRTUAL_ENV}")${ResetColor}) ${PROMPT_START}$($prompt_callback)${PROMPT_END}"
-    else
-      EMPTY_PROMPT="${PROMPT_START}$($prompt_callback)${PROMPT_END}"
-    fi
+    EMPTY_PROMPT="${PROMPT_START}$($prompt_callback)${PROMPT_END}"
   fi
 
   # fetch remote revisions every other $GIT_PROMPT_FETCH_TIMEOUT (default 5) minutes
@@ -171,6 +162,7 @@ function checkUpstream() {
 }
 
 function updatePrompt() {
+  printf '\033[37m%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' ─
   local GIT_PROMPT_PREFIX
   local GIT_PROMPT_SUFFIX
   local GIT_PROMPT_SEPARATOR
@@ -186,10 +178,10 @@ function updatePrompt() {
   local PROMPT_START
   local PROMPT_END
   local EMPTY_PROMPT
+  local ResetColor
+  local Blue
   local GIT_PROMPT_FETCH_TIMEOUT
   local __GIT_STATUS_CMD
-
-  local Blue="\[\033[0;34m\]"
 
   git_prompt_config
 
@@ -245,7 +237,7 @@ function updatePrompt() {
 
     PS1="${PROMPT_START}$($prompt_callback)${STATUS}${PROMPT_END}"
     if [[ -n "${VIRTUAL_ENV}" ]]; then
-      PS1="(${Blue}$(basename ${VIRTUAL_ENV})${ResetColor}) ${PS1}"
+      PS1="${Blue}($(basename "${VIRTUAL_ENV}"))${ResetColor} ${PS1}"
     fi
 
   else
@@ -276,4 +268,4 @@ else
 fi
 
 git_prompt_dir
-source "$__GIT_PROMPT_DIR/git-prompt-help.sh"
+source $__GIT_PROMPT_DIR/git-prompt-help.sh
