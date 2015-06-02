@@ -269,3 +269,5 @@ fi
 
 git_prompt_dir
 source $__GIT_PROMPT_DIR/git-prompt-help.sh
+
+# comments
